@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,6 +10,8 @@ from typing import Any
 
 import feedparser
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG_PATH = ROOT / "daily-paper.json"
@@ -45,7 +48,31 @@ def save_seen(seen: set[str]) -> None:
     SEEN_PATH.write_text(json.dumps(sorted(seen), indent=2) + "\n")
 
 
-def arxiv_search(query: str, max_results: int) -> list[Paper]:
+def make_http_session() -> requests.Session:
+    retry = Retry(
+        total=4,
+        connect=4,
+        read=4,
+        status=4,
+        backoff_factor=2,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset({"GET"}),
+        respect_retry_after_header=True,
+    )
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.headers.update(
+        {
+            "User-Agent": "daily-paper-suggestion/1.0 (https://github.com/inoue0426/daily-paper-suggestion)"
+        }
+    )
+    return session
+
+
+HTTP = make_http_session()
+
+
+def arxiv_search(query: str, max_results: int, cfg: dict[str, Any]) -> list[Paper]:
     params = {
         "search_query": query,
         "start": 0,
@@ -53,7 +80,13 @@ def arxiv_search(query: str, max_results: int) -> list[Paper]:
         "sortBy": "submittedDate",
         "sortOrder": "descending",
     }
-    r = requests.get("https://export.arxiv.org/api/query", params=params, timeout=30)
+    connect_timeout = cfg.get("arxiv_connect_timeout", 10)
+    read_timeout = cfg.get("arxiv_read_timeout", 90)
+    r = HTTP.get(
+        "https://export.arxiv.org/api/query",
+        params=params,
+        timeout=(connect_timeout, read_timeout),
+    )
     r.raise_for_status()
     feed = feedparser.parse(r.content)
     out = []
@@ -86,10 +119,23 @@ def ollama_generate(cfg: dict[str, Any], prompt: str, json_mode: bool = False) -
 
 def candidate_pool(cfg: dict[str, Any], seen: set[str]) -> list[Paper]:
     merged: dict[str, Paper] = {}
-    for query in cfg["arxiv_queries"]:
-        for p in arxiv_search(query, cfg.get("max_results_per_query", 20)):
+    queries = cfg["arxiv_queries"]
+    delay = cfg.get("arxiv_request_delay_seconds", 3)
+
+    for i, query in enumerate(queries):
+        if i > 0:
+            time.sleep(delay)
+        try:
+            found = arxiv_search(query, cfg.get("max_results_per_query", 12), cfg)
+            print(f"arXiv: {len(found):2d} results for {query}")
+        except requests.RequestException as exc:
+            print(f"WARNING: arXiv query failed after retries: {query}\n  {exc}")
+            continue
+
+        for p in found:
             if p.paper_id not in seen:
                 merged[p.paper_id] = p
+
     return list(merged.values())
 
 
@@ -180,8 +226,9 @@ def main() -> None:
     seen = load_seen()
     papers = candidate_pool(cfg, seen)
     if not papers:
-        raise SystemExit("No unseen paper candidates found.")
+        raise SystemExit("No unseen paper candidates found; all arXiv requests may have failed or all results were already seen.")
 
+    print(f"Candidate pool: {len(papers)} unseen papers")
     paper, why = rank_with_ollama(cfg, papers)
     summary = summarize_with_ollama(cfg, paper, why)
 

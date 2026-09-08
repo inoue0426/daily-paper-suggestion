@@ -55,7 +55,7 @@ def arxiv_search(query: str, max_results: int) -> list[Paper]:
     }
     r = requests.get("https://export.arxiv.org/api/query", params=params, timeout=30)
     r.raise_for_status()
-    feed = feedparser.loads(r.text)
+    feed = feedparser.parse(r.content)
     out = []
     for e in feed.entries:
         out.append(

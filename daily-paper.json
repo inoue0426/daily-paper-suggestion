@@ -1,0 +1,21 @@
+{
+  "ollama_base_url": "http://127.0.0.1:11434",
+  "ollama_model": "qwen3:8b",
+  "max_results_per_query": 20,
+  "max_candidates_for_llm": 40,
+  "research_interests": [
+    "perturbation-conditioned biological state transitions",
+    "drug response prediction and treatment-effect modeling",
+    "single-cell perturbation modeling and foundation models",
+    "representation geometry of interventions and biological states",
+    "causal representation learning, counterfactual reasoning, and mechanism",
+    "AI-for-science and autonomous scientific discovery",
+    "biomedical graph learning and interpretable machine learning"
+  ],
+  "arxiv_queries": [
+    "cat:q-bio.GN AND (all:perturbation OR all:drug)",
+    "cat:q-bio.QM AND (all:single-cell OR all:perturbation)",
+    "cat:cs.LG AND (all:causal OR all:intervention) AND (all:biology OR all:biomedical)",
+    "cat:cs.AI AND (all:scientific-discovery OR all:AI-for-science)"
+  ]
+}

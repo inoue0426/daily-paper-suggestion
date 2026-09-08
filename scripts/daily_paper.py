@@ -61,11 +61,9 @@ def make_http_session() -> requests.Session:
     )
     session = requests.Session()
     session.mount("https://", HTTPAdapter(max_retries=retry))
-    session.headers.update(
-        {
-            "User-Agent": "daily-paper-suggestion/1.0 (https://github.com/inoue0426/daily-paper-suggestion)"
-        }
-    )
+    session.headers.update({
+        "User-Agent": "daily-paper-suggestion/1.0 (https://github.com/inoue0426/daily-paper-suggestion)"
+    })
     return session
 
 
@@ -80,26 +78,22 @@ def arxiv_search(query: str, max_results: int, cfg: dict[str, Any]) -> list[Pape
         "sortBy": "submittedDate",
         "sortOrder": "descending",
     }
-    connect_timeout = cfg.get("arxiv_connect_timeout", 10)
-    read_timeout = cfg.get("arxiv_read_timeout", 90)
     r = HTTP.get(
         "https://export.arxiv.org/api/query",
         params=params,
-        timeout=(connect_timeout, read_timeout),
+        timeout=(cfg.get("arxiv_connect_timeout", 10), cfg.get("arxiv_read_timeout", 90)),
     )
     r.raise_for_status()
     feed = feedparser.parse(r.content)
-    out = []
+    out: list[Paper] = []
     for e in feed.entries:
-        out.append(
-            Paper(
-                title=re.sub(r"\s+", " ", e.title).strip(),
-                abstract=re.sub(r"\s+", " ", e.summary).strip(),
-                url=e.link,
-                published=e.published,
-                authors=[a.name for a in e.authors],
-            )
-        )
+        out.append(Paper(
+            title=re.sub(r"\s+", " ", e.title).strip(),
+            abstract=re.sub(r"\s+", " ", e.summary).strip(),
+            url=e.link,
+            published=e.published,
+            authors=[a.name for a in e.authors],
+        ))
     return out
 
 
@@ -112,7 +106,7 @@ def ollama_generate(cfg: dict[str, Any], prompt: str, json_mode: bool = False) -
     }
     if json_mode:
         payload["format"] = "json"
-    r = requests.post(f"{base}/api/generate", json=payload, timeout=600)
+    r = requests.post(f"{base}/api/generate", json=payload, timeout=900)
     r.raise_for_status()
     return r.json()["response"].strip()
 
@@ -126,12 +120,11 @@ def candidate_pool(cfg: dict[str, Any], seen: set[str]) -> list[Paper]:
         if i > 0:
             time.sleep(delay)
         try:
-            found = arxiv_search(query, cfg.get("max_results_per_query", 12), cfg)
+            found = arxiv_search(query, cfg.get("max_results_per_query", 20), cfg)
             print(f"arXiv: {len(found):2d} results for {query}")
         except requests.RequestException as exc:
             print(f"WARNING: arXiv query failed after retries: {query}\n  {exc}")
             continue
-
         for p in found:
             if p.paper_id not in seen:
                 merged[p.paper_id] = p
@@ -139,48 +132,73 @@ def candidate_pool(cfg: dict[str, Any], seen: set[str]) -> list[Paper]:
     return list(merged.values())
 
 
-def rank_with_ollama(cfg: dict[str, Any], papers: list[Paper]) -> tuple[Paper, str]:
+def rank_with_ollama(cfg: dict[str, Any], papers: list[Paper], count: int) -> list[tuple[Paper, str]]:
     compact = []
-    for i, p in enumerate(papers[: cfg.get("max_candidates_for_llm", 40)]):
+    for i, p in enumerate(papers[: cfg.get("max_candidates_for_llm", 60)]):
         compact.append({
             "index": i,
             "title": p.title,
-            "abstract": p.abstract[:2600],
+            "abstract": p.abstract[:2200],
             "published": p.published,
             "url": p.url,
         })
 
+    count = min(count, len(compact))
     interests = "\n".join(f"- {x}" for x in cfg["research_interests"])
-    prompt = f"""You are selecting exactly ONE paper for a computational biomedical AI researcher to read today.
+    prompt = f"""あなたは計算生物学・Biomedical AI研究者のために、今日読む価値が高い論文を選ぶresearch scoutです。
 
-Research interests:
+研究関心:
 {interests}
 
-Selection priorities:
-1. Could materially change how the researcher thinks about intervention/perturbation modeling.
-2. Offers a conceptual or methodological tool, not merely a small benchmark gain.
-3. Relevant to drug response, perturbation biology, representation learning, causal/state-transition modeling, or AI-for-science.
-4. Recent work is preferred, but an unusually important conceptual paper may win.
-5. Avoid redundant candidates.
+候補から上位{count}本を選んでください。
+重視する順序:
+1. 研究者の考え方や問題設定を変えうるconceptual novelty
+2. 自分の研究に転用できるmethod / representation / evaluation / experimental idea
+3. perturbation, intervention, drug response, single-cell, causal/state-transition, AI-for-scienceとの関連
+4. 単なる小さなbenchmark improvementより、再利用可能なideaを優先
+5. 10本が似た話に偏らないよう、ある程度diversityを持たせる
+6. 関連を無理に作らない。abstractで支えられない主張はしない
 
 Candidates:
 {json.dumps(compact, ensure_ascii=False)}
 
-Return strict JSON only:
-{{"index": integer, "why_this_one": "2-4 sentences"}}
+JSONのみを返してください:
+{{"selected": [{{"index": 0, "why": "日本語で1-2文"}}]}}
+selectedは必ず{count}件、indexは重複なし。
 """
     result = json.loads(ollama_generate(cfg, prompt, json_mode=True))
-    idx = int(result["index"])
-    if idx < 0 or idx >= len(compact):
-        idx = 0
-    return papers[idx], str(result.get("why_this_one", "Selected as today's highest-value paper."))
+    raw = result.get("selected", [])
+
+    selected: list[tuple[Paper, str]] = []
+    used: set[int] = set()
+    for item in raw:
+        try:
+            idx = int(item["index"])
+        except Exception:
+            continue
+        if 0 <= idx < len(compact) and idx not in used:
+            selected.append((papers[idx], str(item.get("why", "読む価値が高い候補。"))))
+            used.add(idx)
+        if len(selected) >= count:
+            break
+
+    if len(selected) < count:
+        for idx in range(len(compact)):
+            if idx not in used:
+                selected.append((papers[idx], "ランキング結果の不足分として補完。"))
+                used.add(idx)
+            if len(selected) >= count:
+                break
+
+    return selected
 
 
 def summarize_with_ollama(cfg: dict[str, Any], paper: Paper, why: str) -> str:
     interests = "\n".join(f"- {x}" for x in cfg["research_interests"])
-    prompt = f"""Summarize the paper below for a researcher. Be critical, not promotional.
+    prompt = f"""以下の論文を、研究者が『全部を真似するのではなく、良いideaだけ盗む』ために要約してください。
+基本は日本語。標準的なtechnical termは英語のままでよいです。宣伝調は禁止。abstractから言えないことは推測しないでください。
 
-Research interests:
+研究関心:
 {interests}
 
 Paper:
@@ -191,32 +209,25 @@ URL: {paper.url}
 Abstract:
 {paper.abstract}
 
-Why it was selected:
+選定理由:
 {why}
 
-Write concise Markdown in Japanese while preserving standard technical terms in English.
+以下のMarkdown形式で簡潔に書いてください。
 
-Required sections:
-## 30秒要約
-3-5 bullets.
+### 30秒要約
+2-4 bullet。
 
-## 何が新しいか
-Explain the central conceptual novelty, not just model components.
+### この論文から盗むならここ
+最も再利用価値があるideaを1-3個。methodそのものだけでなく、problem formulation、representation、loss、evaluation、experimental designでもよい。
 
-## 研究にどう効くか
-Connect specifically to perturbation-conditioned state transition, drug response, intervention geometry, representation learning, or research methodology when genuinely relevant. Do not force a connection.
+### 自分の研究にどう使えそうか
+本当に関係がある場合だけ具体的に。PerturbRxやintervention modeling等への接続を無理に作らない。
 
-## 一番疑うべき点
-Give the strongest alternative explanation, assumption, confound, or evaluation weakness.
+### そのまま信じない方がいい点
+strongest caveat / alternative explanation / assumptionを1-2個。
 
-## 読むときの問い
-Give exactly 3 questions the researcher should answer while reading.
-
-## 判定
-One of: 精読 / ざっと読む / Abstractだけで十分
-Then one sentence why.
-
-Do not claim anything not supported by the abstract. Explicitly say when full-text verification is needed.
+### 読む優先度
+「精読」「ざっと読む」「Abstractだけで十分」のどれか1つ + 理由1文。
 """
     return ollama_generate(cfg, prompt)
 
@@ -228,28 +239,47 @@ def main() -> None:
     if not papers:
         raise SystemExit("No unseen paper candidates found; all arXiv requests may have failed or all results were already seen.")
 
-    print(f"Candidate pool: {len(papers)} unseen papers")
-    paper, why = rank_with_ollama(cfg, papers)
-    summary = summarize_with_ollama(cfg, paper, why)
+    count = int(cfg.get("daily_paper_count", 10))
+    count = min(count, len(papers))
+    print(f"Candidate pool: {len(papers)} unseen papers; selecting {count}")
+
+    selected = rank_with_ollama(cfg, papers, count)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     today = datetime.now(timezone.utc).date().isoformat()
     out = OUT_DIR / f"{today}.md"
-    md = f"""# {paper.title}
 
-- **URL:** {paper.url}
-- **Published:** {paper.published}
-- **Authors:** {", ".join(paper.authors)}
-- **Source:** {paper.source}
+    sections = [
+        f"# Daily Paper Suggestions — {today}",
+        "",
+        f"今日は **{len(selected)}本**。全部を読む前提ではなく、各論文から使えるideaを拾うためのリストです。",
+        "",
+        "## 今日の10本",
+        "",
+    ]
 
-## 今日これを選んだ理由
+    for rank, (paper, why) in enumerate(selected, start=1):
+        print(f"[{rank}/{len(selected)}] Summarizing: {paper.title}")
+        summary = summarize_with_ollama(cfg, paper, why)
+        sections.extend([
+            f"## {rank}. {paper.title}",
+            "",
+            f"- **URL:** {paper.url}",
+            f"- **Published:** {paper.published}",
+            f"- **Authors:** {', '.join(paper.authors)}",
+            f"- **Source:** {paper.source}",
+            "",
+            "### 今日入れた理由",
+            why,
+            "",
+            summary,
+            "",
+            "---",
+            "",
+        ])
+        seen.add(paper.paper_id)
 
-{why}
-
-{summary}
-"""
-    out.write_text(md)
-    seen.add(paper.paper_id)
+    out.write_text("\n".join(sections))
     save_seen(seen)
     print(f"Wrote {out}")
 

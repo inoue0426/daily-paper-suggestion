@@ -2,6 +2,8 @@
 
 毎日10本、今の研究に効きそうな論文を arXiv から選び、Local Ollama で日本語中心に要約して保存するための research CI です。
 
+👉 **GitHub Pages:** https://inoue0426.github.io/daily-paper-suggestion/
+
 ## What it does
 
 1. arXiv から perturbation / drug response / single-cell / causal intervention / AI-for-science 周辺の新着候補を取得

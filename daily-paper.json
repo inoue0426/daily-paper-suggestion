@@ -1,8 +1,12 @@
 {
   "ollama_base_url": "http://127.0.0.1:11434",
   "ollama_model": "qwen3:8b",
+  "daily_paper_count": 10,
   "max_results_per_query": 20,
-  "max_candidates_for_llm": 40,
+  "max_candidates_for_llm": 60,
+  "arxiv_connect_timeout": 10,
+  "arxiv_read_timeout": 90,
+  "arxiv_request_delay_seconds": 3,
   "research_interests": [
     "perturbation-conditioned biological state transitions",
     "drug response prediction and treatment-effect modeling",

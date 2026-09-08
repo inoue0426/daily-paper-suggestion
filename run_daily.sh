@@ -17,7 +17,7 @@ fi
 python3 -m pip install -q -r requirements.txt
 python3 scripts/daily_paper.py
 
-git add papers/daily papers/seen.json
+git add papers/daily papers/seen.json docs
 if ! git diff --cached --quiet; then
   git commit -m "docs: add daily paper $(date +%F)"
   git push

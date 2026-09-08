@@ -1,22 +1,23 @@
 # daily-paper-suggestion
 
-毎日1本、今の研究に効きそうな論文を arXiv から選び、Local Ollama で批判的に要約して保存するための小さな research CI です。
+毎日10本、今の研究に効きそうな論文を arXiv から選び、Local Ollama で日本語中心に要約して保存するための research CI です。
 
 ## What it does
 
 1. arXiv から perturbation / drug response / single-cell / causal intervention / AI-for-science 周辺の新着候補を取得
 2. Local Ollama で候補をランキング
-3. 1本だけ選択
-4. 日本語で以下を出力
+3. 上位10本を、似た論文だけに偏らないように選択
+4. 各論文について日本語中心で以下を出力
    - 30秒要約
-   - 何が新しいか
-   - 自分の研究にどう効くか
-   - 一番疑うべき点
-   - 読むときの問い3つ
+   - この論文から盗むならここ
+   - 自分の研究にどう使えそうか
+   - そのまま信じない方がいい点
    - 精読 / ざっと読む / Abstractだけで十分 の判定
-5. `papers/daily/YYYY-MM-DD.md` に保存
+5. `papers/daily/YYYY-MM-DD.md` に10本まとめて保存
 6. 既読論文を `papers/seen.json` に記録
 7. `run_daily.sh` 経由なら自動で commit / push
+
+狙いは「10本すべてを精読する」ことではなく、毎日広くscanして、各論文から再利用できるproblem formulation / representation / method / loss / evaluation / experimental designを拾うことです。
 
 ## Setup
 
@@ -39,23 +40,18 @@ ollama serve
 bash run_daily.sh
 ```
 
+10本を順番に要約するため、1本版より実行時間は長くなります。
+
 ## Daily scheduling on macOS
 
 GitHub Actions runner から Mac の localhost Ollama には接続できないため、スケジュールは Mac 側で実行します。
 
-まず runner を実行可能にします:
-
 ```bash
 chmod +x run_daily.sh
-```
-
-例: 毎朝 8:00 に実行する cron:
-
-```bash
 crontab -e
 ```
 
-以下を追加（`/ABSOLUTE/PATH` は clone した場所に変更）:
+例: 毎朝 8:00 に実行:
 
 ```cron
 0 8 * * * /bin/bash /ABSOLUTE/PATH/daily-paper-suggestion/run_daily.sh >> /ABSOLUTE/PATH/daily-paper-suggestion/daily-paper.log 2>&1
@@ -68,6 +64,7 @@ Mac がその時間に起動していて、Ollama server が利用可能であ�
 `daily-paper.json` で以下を変更できます:
 
 - `ollama_model`: default `qwen3:8b`
+- `daily_paper_count`: 1日あたりの推薦本数。default `10`
 - `research_interests`: 推薦基準
 - `arxiv_queries`: 探索範囲
 - `max_results_per_query`: queryごとの候補数
@@ -81,4 +78,6 @@ Mac がその時間に起動していて、Ollama server が利用可能であ�
 
 ## Design principle
 
-この bot は単なる要約器ではなく、研究者自身の critical thinking を補助するために、毎回「一番疑うべき点」と「読むときの問い」を明示的に生成します。最終的な研究判断をモデルに委譲する設計にはしていません。
+この bot は論文のstoryを鵜呑みにするための要約器ではありません。各論文から「使えるidea」を抽出しつつ、同時に strongest caveat を明示します。
+
+PerturbRx 等への関連付けも、abstractから自然に言える場合だけ行い、無理な接続やunsupported claimは避けるpromptにしています。最終的に何を読むか、何を研究に取り込むかの判断は研究者側に残します。

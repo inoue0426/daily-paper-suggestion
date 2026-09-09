@@ -2,24 +2,32 @@
   "ollama_base_url": "http://127.0.0.1:11434",
   "ollama_model": "qwen3:8b",
   "daily_paper_count": 10,
-  "max_results_per_query": 20,
-  "max_candidates_for_llm": 60,
+  "max_results_per_query": 18,
+  "max_candidates_for_llm": 90,
   "arxiv_connect_timeout": 10,
   "arxiv_read_timeout": 90,
   "arxiv_request_delay_seconds": 3,
+  "max_perturbation_like": 3,
+  "min_outside_core_biomed": 3,
   "research_interests": [
-    "perturbation-conditioned biological state transitions",
-    "drug response prediction and treatment-effect modeling",
-    "single-cell perturbation modeling and foundation models",
-    "representation geometry of interventions and biological states",
-    "causal representation learning, counterfactual reasoning, and mechanism",
-    "AI-for-science and autonomous scientific discovery",
-    "biomedical graph learning and interpretable machine learning"
+    "biomedical AI, drug discovery, precision medicine, and interpretable machine learning",
+    "AI-for-science, autonomous scientific discovery, hypothesis generation, experiment design, and falsification",
+    "scientific reasoning with LLMs, agents, knowledge graphs, evidence synthesis, and uncertainty",
+    "causal representation learning, counterfactual reasoning, world models, dynamical systems, and mechanism discovery",
+    "graph learning, geometric deep learning, discrete and probabilistic representations, diffusion and generative modeling",
+    "single-cell, genomics, systems biology, multimodal biological modeling, and foundation models",
+    "novel ML ideas from outside biomedicine that could transfer into scientific research"
   ],
   "arxiv_queries": [
-    "cat:q-bio.GN AND (all:perturbation OR all:drug)",
-    "cat:q-bio.QM AND (all:single-cell OR all:perturbation)",
-    "cat:cs.LG AND (all:causal OR all:intervention) AND (all:biology OR all:biomedical)",
-    "cat:cs.AI AND (all:scientific-discovery OR all:AI-for-science)"
+    "cat:q-bio.GN AND (all:perturbation OR all:drug OR all:single-cell)",
+    "cat:q-bio.QM AND (all:causal OR all:dynamics OR all:multimodal OR all:foundation)",
+    "cat:cs.AI AND (all:scientific-discovery OR all:AI-for-science OR all:hypothesis OR all:experiment-design)",
+    "cat:cs.CL AND (all:scientific-reasoning OR all:biomedical OR all:evidence OR all:agent)",
+    "cat:cs.LG AND (all:causal OR all:world-model OR all:dynamical-systems OR all:representation-learning)",
+    "cat:cs.LG AND (all:diffusion OR all:flow-matching OR all:optimal-transport OR all:discrete)",
+    "cat:cs.LG AND (all:graph OR all:geometric OR all:compositional OR all:reasoning)",
+    "cat:stat.ML AND (all:uncertainty OR all:calibration OR all:distribution-shift OR all:active-learning)",
+    "cat:cs.AI AND (all:agent OR all:planning OR all:self-improvement OR all:verification)",
+    "cat:q-bio.MN AND (all:mechanism OR all:network OR all:systems-biology OR all:drug)"
   ]
 }

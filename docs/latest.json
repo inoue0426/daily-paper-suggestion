@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-12",
+  "papers": [
+    {
+      "title": "Biology-in-the-loop: Amortized Adaptive Hit Discovery in CRISPR Screens",
+      "authors": "Carl Edwards, Edward De Brouwer, Xiner Li, Namkyeong Lee, Ehsan Hajiramezanali, Anne Biton, Sara Mostafavi, Gabriele Scalia",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11877v1",
+      "summary": "1,389件のCRISPR screenから、逐次実験で「次に何を試すか」を学ぶ AssayBench-Loop / AssayLoop を提案。履歴横断で学習した acquisition policy とLLM由来の生物学的priorを適応的に受け渡し、候補の約5%を測るだけで27.7%のhitを回収（random比5.67倍）。",
+      "steal": "複数の過去screenをmeta-training dataとして使い、cold startではLLM prior、データが溜まったらlearned acquisitionへ比重を移す adaptive handoff。",
+      "use": "falsification-firstな自律研究を、単なるagent orchestrationではなく「過去の実験からacquisition policy自体をamortizeする」問題に落としている。次の研究テーマとして非常に近い。",
+      "doubt": "temporally held-outでも、screen間でassay design・gene library・phenotype ontologyが共有されている可能性がある。完全に新規の生物系・新規libraryで5% hit recoveryが維持されるかを確認したい。",
+      "priority": "精読・今日の1位"
+    },
+    {
+      "title": "CausalArena: Benchmarking Causal Discovery in the Foundation Model Era",
+      "authors": "Zi-Rong Li, Si-Yang Liu, Tian-Zuo Wang, Han-Jia Ye",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11897v1",
+      "summary": "因果発見を synthetic、意味的に監査可能なSCM、科学式に接地したSCM、実データで統一評価する進化可能なbenchmark。SCM familyやprotocolを変えると手法順位が大きく入れ替わり、事前学習環境との重複がfoundation model評価を歪めると示す。",
+      "steal": "単一benchmarkの平均値ではなく、生成mechanism family × protocol × pretraining-overlapごとのranking stabilityを一次評価対象にする設計。",
+      "use": "Transfer Trustで得た「あるdataset/modelでのpredictive structureをinvariantと呼べない」という結論を、因果発見benchmark全体の問題として扱っている。",
+      "doubt": "semantic/formula-grounded SCMも研究者が設計した閉じた世界である。実データで真のグラフが不明な以上、benchmark diversityがexternal validityをどこまで保証するかは別問題。",
+      "priority": "精読・今日の2位"
+    },
+    {
+      "title": "scDEFT: A deep learning framework for drug-effect prediction and counterfactual reasoning",
+      "authors": "Murthy Devarakonda",
+      "published": "2026-09-09",
+      "url": "https://arxiv.org/abs/2609.10831v1",
+      "summary": "drug-conditioned FiLM latentを細胞単位で学習・freezeし、transcriptional neighborhood上の2 headで状態変化と治療前responderを予測。IBD 116万細胞・3 cohort・2 drug classでpretreatment AUROC 0.70、標準予測器はchanceと報告する。",
+      "steal": "response headとは独立したstate-change headを共有neighborhood上に置き、さらにcell-composition control付きのbackward attributionでlatent→geneを戻す二重検証。",
+      "use": "PerturbRxと問題設定・freeze-transfer・薬剤条件付きlatentがかなり近い。違いはmatched longitudinal patient single-cellとcell-neighborhood aggregationで、競合整理上すぐ読む価値が高い。",
+      "doubt": "単著preprintで、drug classが2つ、responder AUROC 0.70。baseline-to-reproducibility-ceiling headroom 45%という独自指標、cohort split、患者数、治療後情報の漏洩可能性を本文で厳しく確認すべき。",
+      "priority": "精読・今日の3位"
+    },
+    {
+      "title": "Autonomous Chemical Mechanistic Discovery through Agentic Reasoning and Validation",
+      "authors": "Dong Li et al.",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11147v1",
+      "summary": "ARCHEは汎用reasoning model、計算化学特化model、tool registryを閉ループ化し、機構仮説の生成・優先順位付け・計算実行・証拠による修正を自動化。既報反応、未公表反応、selectivity descriptor発見の3例で検証する。",
+      "steal": "各仮説を文章の説得力ではなく、計算可能な判別予測へ変換し、tool outputを次のhypothesis rankingへ戻す self-validating loop。",
+      "use": "DrugAgentやmissing-evidenceの次に進むなら、「検索して答えるagent」ではなく計算で仮説を潰すagentの具体例として重要。",
+      "doubt": "3つの成功事例は選択バイアスが強い。失敗機構、計算予算、人間の介入回数、alternative mechanismを誤って棄却した率が報告されているかを見る。",
+      "priority": "精読"
+    },
+    {
+      "title": "Sci-MMR: Benchmarking Multi-Step Evidence-Grounded Scientific Reasoning in Multimodal Agents",
+      "authors": "Jiaqiang Li et al.",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11243v1",
+      "summary": "科学claim、引用知識、figure領域をargument graphで結ぶ235件のmulti-hop task。8モデルで最終回答精度が完全evidence recoveryを20%以上上回り、失敗の57.2%がevidence acquisition、31.8%がintegration。gold evidenceでも最難関の最高精度は69.1%。",
+      "steal": "最終正解だけでなく、argument graphの必要node/edgeを回収できたかで acquisition failure と integration failure を分解する。",
+      "use": "missing-evidenceで扱ったevidence sufficiencyをmultimodal scientific figuresまで拡張する、かなり自然な次のbenchmark設計。",
+      "doubt": "argument graphのgold構築品質と、figure crop提供が現実の文献探索agentをどれほど再現するか。235 task・4分野で結論を一般化しすぎていないか。",
+      "priority": "精読"
+    },
+    {
+      "title": "General Quantification of Covariate and Concept Shifts",
+      "authors": "Hongbo Chen, Li Charlie Xia",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11918v1",
+      "summary": "source/target supportが異なると従来のconcept shift定義が破綻すると指摘し、entropic optimal transportに基づく γ*-concept shiftを導入。covariate/concept shiftを統一した推定可能なerror boundとDataShifts algorithmを示す（ICML 2026採択）。",
+      "steal": "transfer failureを一つのdistanceへ潰さず、transport coupling上でcovariate shiftとconditional mechanism shiftを分離し、有限標本保証付きで推定する。",
+      "use": "perturbation transferabilityを経験的相関だけでなく、support mismatchと推定可能なshift量から整理できる可能性がある。",
+      "doubt": "boundが計算できても実用上tightとは限らない。高次元omics・少数contextでentropic regularizationとshift estimatorが安定するかを小規模に再現したい。",
+      "priority": "精読"
+    },
+    {
+      "title": "T1: Terminal Agent Reinforcement Learning for Long-Horizon Tasks",
+      "authors": "Junyao Yang et al.",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11042v1",
+      "summary": "122B MoE agentを実shell上300超tool-callまでRL。task固有verifierの通過数をdense process rewardにし、sampled token IDとMoE routingを学習時に再生してpolicy driftを抑制。Terminal-Bench 2.1で43.8%→64.0%。",
+      "steal": "最終成功だけでなく「通過したverifierの絶対数」をprocess reward化し、rollout時のroutingまで再生してtrain–inference mismatchを監査する。",
+      "use": "長時間のCodex/Claude実験運用で起きる途中失敗や、検証器をどこに置くかに直接関係する。agent researchをやるなら実装レシピとして有用。",
+      "doubt": "122B規模と専用rollout基盤への依存が強い。benchmark contamination回避の主張、計算量、300-turnでのreward hacking、GPT-5.4比較条件を確認する必要がある。",
+      "priority": "ざっと読む"
+    },
+    {
+      "title": "Measuring the Value of World-Model Updates: A Counterfactual Utility Protocol for Continual Adaptation",
+      "authors": "Anqi Peter Li, Kaden Kim",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.10954v1",
+      "summary": "継続world modelの各update地点で、共通乱数を使って update/hold の世界を分岐する fork ledgerを提案。固定update機構を常に適用すると3つのcontrol taskすべてでreturnが低下し、prediction errorだけでは更新価値を表せないと示す。",
+      "steal": "事前登録したdecision pointごとにupdate/holdをforkし、同じepisodeで ΔR を測る。選択されたupdateではなく attempted fork 全体をestimandにする点。",
+      "use": "「介入を入れた世界」と「入れなかった世界」をmatchedに比較する設計は、transfer/updateをいつ信頼するかという研究軸に非常に近い。",
+      "doubt": "3つのsimulation task、固定mechanism、各task 240 forksに限定。fork可能なsimulatorがない実世界では反実仮想utilityをどう近似するかが未解決。",
+      "priority": "精読"
+    },
+    {
+      "title": "NovGauge: A Fine-Grained Benchmark for Diagnosing LLMs' Capability in Paper Novelty Assessment",
+      "authors": "Guoqiang Zhang et al.",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11234v1",
+      "summary": "論文noveltyをtask・problem・methodに分解し、619 paper pairsと50 multi-paper setsで18 LLMを評価。正しいpositive判定でも70%以上は引用証拠が理由を論理的に支えず、GPT-5.5でもVerified F1は43–72%。",
+      "steal": "noveltyを一値採点せず、dimension別 correctness → evidence grounding → logical entailment のcascadeでverified scoreへ落とす。",
+      "use": "自分の論文のAI reviewer-risk checkや、新規研究idea選定にLLMを使う際の限界をかなり直接的に測っている。",
+      "doubt": "ICLR overlap claimとsurvey co-citationがnoveltyのgoldとして十分か。引用されない近接研究やnegative novelty判断をどこまで扱えるかを見る。",
+      "priority": "ざっと読む"
+    },
+    {
+      "title": "GPU-CFR: 80x Faster Counterfactual Regret Minimization by Compiling the Game to Static Dataflow and CUDA Graph Replay",
+      "authors": "Boning Li, Longbo Huang",
+      "published": "2026-09-10",
+      "url": "https://arxiv.org/abs/2609.11923v1",
+      "summary": "細粒度kernel launchでGPUがCPUに負けていたCFRを、固定game構造からstatic dataflowへcompileしCUDA Graph Replay。A100 1枚で従来GPU比29.8–80.4倍、主要CPU実装比14–258倍を達成し、CPU上でも表現変更だけで2.2–51.1倍。",
+      "steal": "反復ごとに変わらないshape・index・buffer addressを先にflat化し、演算列全体を一度captureしてreplayする「表現をcompileする」最適化。",
+      "use": "専門外枠。ただし、200 bootstrap/shuffleのような構造固定・数値だけ変わる研究計算を高速化する発想として実用的に刺さる。",
+      "doubt": "CFR特有の固定treeと規則的depth passが速度向上の源。omics pipelineへ移すには、Python overheadではなく本当に同型のstatic dataflowが支配的かprofilingが必要。",
+      "priority": "ざっと読む"
+    }
+  ]
+}

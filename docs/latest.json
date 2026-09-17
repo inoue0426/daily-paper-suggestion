@@ -6,110 +6,110 @@
       "authors": "Yerim Oh, Gunhee Kim",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18262v1",
-      "summary": "科学文献retrieverが苦手なlong-tail概念を診断し、APIで根拠を拡張し、fact verificationとhard negative miningで反復的に学習データを補う。材料・biomedicalを含む9 benchmarkで19 baselineを上回る。",
-      "use": "いま構想しているdrug–target–response／cell–cell communicationのRAGでは、希少な遺伝子・薬剤・関係型ほどretrievalが崩れやすい。まさにその弱点を学習側から直す方法。",
-      "steal": "retrieval失敗をconcept頻度帯と混同ペアで診断し、根拠API→hard negative→再学習を閉ループ化する設計。",
-      "doubt": "合成queryやAPI由来evidenceがbenchmark固有の表現を学んでいないか。実際のPubMed corpusで、未知のdrug–target relationに対するrecallと誤引用率が同時に改善するかを確認したい。",
-      "priority": "精読・今日の1位"
+      "summary": "Diagnoses long-tail concept failures in scientific retrievers, expands evidence through APIs, and iteratively repairs training data using fact verification and hard-negative mining. The method outperforms 19 baselines across nine benchmarks spanning materials science and biomedicine.",
+      "use": "This is directly relevant to drug-target-response and cell-cell communication RAG systems, where rare genes, drugs, and relation types are exactly where retrieval tends to break down. It provides a concrete way to repair that weakness during training.",
+      "steal": "Diagnose retrieval failures by concept-frequency bands and confusion pairs, then close the loop with evidence APIs, hard negatives, and retraining.",
+      "doubt": "Synthetic queries or API-derived evidence may teach benchmark-specific phrasing. I would want to test whether recall for unseen drug-target relations improves on a real PubMed corpus without increasing citation errors.",
+      "priority": "Deep read — #1 today"
     },
     {
       "title": "Hyperbolic Graph Representation Learning for Differential Diagnosis on Biomedical Knowledge Graphs",
       "authors": "Pietro Miotto, Lucia Mellini, Tommaso Marzi, Cesare Alippi, Elena Casiraghi, Alberto Paccanaro, Giorgio Valentini, Mauricio Soto-Gomez",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18481v1",
-      "summary": "phenotype・disease・gene・protein・patientを含むheterogeneous biomedical KGをhyperbolic空間へ埋め込み、Mendelian diseaseの候補順位付けを行う。ontology部分ではEuclideanより低次元で強く、患者統合graphでも診断link predictionを検証。",
-      "use": "階層ontologyと横断的なdrug–target／cell communication edgeを同居させるKG設計に直結する。表現空間を選ぶ理由を、単なるGNN比較以上に明確化できる。",
-      "steal": "ontology由来の木構造はhyperbolic、横断edgeはrelation-aware scoringで扱い、構造タイプ別に表現効率とlink predictionを分解評価する。",
-      "doubt": "preliminary studyで、低次元優位が最終診断性能やOOD患者へ本当に効くかは未確立。Euclidean baselineを同等のparameter budget・negative samplingで比較しているか要確認。",
-      "priority": "精読・今日の2位"
+      "summary": "Embeds a heterogeneous biomedical knowledge graph containing phenotypes, diseases, genes, proteins, and patients in hyperbolic space for Mendelian disease ranking. On ontology structure, hyperbolic embeddings are strong at lower dimension than Euclidean alternatives, and the paper also evaluates diagnostic link prediction on patient-integrated graphs.",
+      "use": "This maps well to a KG that must combine hierarchical ontologies with cross-cutting drug-target and cell-communication edges. It also gives a principled reason to choose the representation geometry rather than treating it as another generic GNN comparison.",
+      "steal": "Use hyperbolic geometry for ontology-derived tree structure, relation-aware scoring for cross-cutting edges, and evaluate representation efficiency separately by structural edge type.",
+      "doubt": "The study is preliminary, and it is unclear whether low-dimensional advantages translate into better final diagnosis or OOD patient performance. Euclidean baselines should be checked under matched parameter budgets and negative sampling.",
+      "priority": "Deep read — #2 today"
     },
     {
       "title": "Evidence-Grounded Agentic Formulation Development in an Autonomous Laboratory",
       "authors": "Michael M. Craig, Riley J. Hickman, Yingshan Ma, Rémi Piché-Taillefer, Christine Allen, Pauric Bannigan",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.19099v1",
-      "summary": "Andromeda 2は構造化された社内実験evidenceを参照し、計算・wet-lab toolを呼び出して製剤batchを逐次設計するagent。paclitaxel SEDDSでhigh-performance hit率50%を達成し、evidence accessのablationで平均AUCが34%向上。",
-      "use": "予測モデルを出すだけでなく、過去実験を根拠として次の介入を選ぶscientific agentの実装例。PerturbRxを実験意思決定へ接続する際の最も具体的な参照になりうる。",
-      "steal": "agent判断ごとに参照した実験recordとtool outputを残し、evidence accessを切るablationで価値を測る評価設計。",
-      "doubt": "単一薬剤・単一製剤系で、同じbudget下の比較でもagent設計以外のautomation差が混ざりうる。別drug／別labで再現するかが最大の検証点。",
-      "priority": "精読・今日の3位"
+      "summary": "Andromeda 2 is an agent that uses structured internal experimental evidence plus computational and wet-lab tools to design formulation batches sequentially. In a paclitaxel SEDDS setting, it reports a 50% high-performance hit rate, while an ablation removing evidence access reduces mean AUC by 34%.",
+      "use": "This is a concrete example of moving beyond prediction toward a scientific agent that chooses the next intervention using past experimental evidence. It could be a useful reference for connecting perturbation models such as PerturbRx to experimental decision-making.",
+      "steal": "Log the exact experimental records and tool outputs used for each agent decision, then ablate evidence access to quantify how much grounded evidence actually contributes.",
+      "doubt": "The evaluation is limited to one drug and one formulation system, and automation differences may be mixed with agent-design effects even under the same budget. Replication across drugs and laboratories is the key test.",
+      "priority": "Deep read — #3 today"
     },
     {
       "title": "Time-Aligned Evolving Concept Graphs for Scientific Relation Forecasting",
       "authors": "Fred Sun, Jingze Wang, Minkun Xu, Shangqi Guo",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18163v1",
-      "summary": "dated paperをsemantic stateとgraph stateの共通update eventとして扱い、予測時点までの情報だけでconcept relationの初出・形成・型を予測する。context更新によりfrozen context比で平均relation AUPRCが16.6%改善。",
-      "use": "PubMed evidenceを時系列で蓄積するKGでは、現在のgraphに未来の知識を混ぜないことが重要。novel drug–target hypothesisのtemporal evaluation設計に転用しやすい。",
-      "steal": "paper timestampを唯一のclockにしてtext embeddingとgraph edgeを同期更新し、time-sliced negativeを作る。",
-      "doubt": "AUROCは高いがpopulation-weighted AUPRCが0.005778と極端に低い。実用候補数でprecisionが意味を持つか、frequency予測以上かを必ず見る。",
-      "priority": "精読"
+      "summary": "Treats each dated paper as a synchronized update event for both semantic and graph state, then predicts the emergence, formation, and type of concept relations using only information available up to the prediction time. Updating context improves mean relation AUPRC by 16.6% over frozen context.",
+      "use": "For a PubMed-backed evidence graph, this is a useful template for avoiding leakage of future knowledge into the present graph. It transfers naturally to temporal evaluation of novel drug-target hypotheses.",
+      "steal": "Use paper timestamps as the single clock for jointly updating text embeddings and graph edges, and construct time-sliced negatives for evaluation.",
+      "doubt": "Despite high AUROC, the population-weighted AUPRC is only 0.005778. The practical question is whether precision remains useful at realistic candidate counts and whether the model is doing more than frequency prediction.",
+      "priority": "Deep read"
     },
     {
       "title": "When Is Graph Structure Worth Its Cost? The Case for Structure Pricing in Retrieval-Augmented Generation",
       "authors": "Yuzhong Zhang, Haoyang Ma, Chao Peng, Lionel Briand, Boxi Yu, Jialun Cao",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18099v1",
-      "summary": "GraphRAGの品質だけでなくingestion・queryの費用も評価し、graphをsource passageの探索に使うEffiRAGを提案。120問のUltraDomainでLightRAG-hybridより多く選好され、総costを57%削減。",
-      "use": "biomedical KG/RAGを作る際、『graphを作ること自体』を目的化せず、どのqueryで構造が費用に見合うかを測る枠組みになる。",
-      "steal": "answer quality × evidence preservation × ingestion/query costの三軸で、vector-only・graph-only・hybridを同じcorpus上で比較する。",
-      "doubt": "120問・4 domainは小さく、preference judgeの頑健性も要確認。多hop biomedical QAと頻繁なcorpus更新でcost優位が残るか。",
-      "priority": "精読"
+      "summary": "Evaluates GraphRAG not only on answer quality but also ingestion and query cost, and proposes EffiRAG, which uses graph structure primarily to locate source passages. On the 120-question UltraDomain benchmark, it is preferred over LightRAG-hybrid more often while reducing total cost by 57%.",
+      "use": "This is a good framework for preventing a biomedical KG/RAG project from treating graph construction as an end in itself. It asks when structural retrieval is actually worth its cost for a given query type.",
+      "steal": "Compare vector-only, graph-only, and hybrid retrieval on the same corpus along three axes: answer quality, evidence preservation, and ingestion/query cost.",
+      "doubt": "The benchmark is small at 120 questions across four domains, and judge robustness matters. The main test is whether the cost advantage survives multi-hop biomedical QA and frequently changing corpora.",
+      "priority": "Deep read"
     },
     {
       "title": "HPOQuest: A Rare-Disease Diagnostic Agent Using Active Phenotype Acquisition",
       "authors": "Kamilia Zaripova, Nassir Navab, Azade Farshad, Annalisa Marsico",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18431v1",
-      "summary": "少数の観測phenotypeから疾患posteriorを保ち、次に聞くべきphenotypeを能動選択するtraining-free診断agent。4 cohortでsparse evidenceからRecall@1を最大30ポイント改善。",
-      "use": "観測を受動的に埋めるのではなく、予測不確実性を減らす次の測定を選ぶ問題設定は、追加assayやperturbation選択へそのまま移せる。",
-      "steal": "candidate rankingとquestion acquisitionを分離し、information gainで『次に取るデータ』を選ぶinterface。",
-      "doubt": "simulated answerでの改善が臨床workflowの欠測・誤記・質問cost下でも維持されるか。固定question setへの過適合も検証したい。",
-      "priority": "ざっと読む"
+      "summary": "Maintains a disease posterior from a small set of observed phenotypes and actively selects which phenotype to ask about next. Across four cohorts, the training-free agent improves Recall@1 from sparse evidence by as much as 30 percentage points.",
+      "use": "The problem framing transfers well from diagnosis to experimental science: instead of passively embedding available observations, choose the next measurement that most reduces predictive uncertainty, such as an additional assay or perturbation.",
+      "steal": "Separate candidate ranking from data acquisition and use information gain to choose the next observation to collect.",
+      "doubt": "Improvements based on simulated answers may not survive real clinical missingness, recording errors, or acquisition costs. Overfitting to a fixed question set is another concern.",
+      "priority": "Skim"
     },
     {
       "title": "Decoding Extrahepatic Targeting of Lipid Nanoparticles with Interpretable Machine Learning",
       "authors": "Asal Mehradfar, Mohammad Shahab Sepehri, Owen Antholine, Varun Shankar, Glen S. Kwon, Salman Avestimehr, Morteza Rasoulianboroujeni",
       "published": "2026-09-15",
       "url": "https://arxiv.org/abs/2609.17721v1",
-      "summary": "81 studies・476 LNP formulationを文献から統合し、lipid構造記述子と配合比から肝外集積を予測。XGBoost ROC-AUC 0.874で、consensus上位20特徴がほぼ全情報を保持した。",
-      "use": "drug deliveryのliterature-derived dataset構築と、構造＋formulation contextを統合する実例。evidence graphから予測tableを作るパイプラインの参考になる。",
-      "steal": "複数modelのSHAP順位をconsensus化し、少数の再現可能なdesign ruleへ圧縮する。",
-      "doubt": "study間の測定protocol差と同一研究内splitによるleakageが性能を押し上げていないか。leave-one-study-outで再評価すべき。",
-      "priority": "ざっと読む"
+      "summary": "Integrates 476 lipid nanoparticle formulations from 81 studies and predicts extrahepatic accumulation from lipid structural descriptors and formulation ratios. XGBoost reaches ROC-AUC 0.874, while a consensus set of the top 20 features retains nearly all predictive information.",
+      "use": "This is a useful example of building a literature-derived drug-delivery dataset and combining molecular structure with formulation context. It could inform a pipeline that turns an evidence graph into a predictive table.",
+      "steal": "Aggregate SHAP rankings across multiple models and compress them into a small, reproducible set of design rules rather than relying on one model's explanation.",
+      "doubt": "Differences in measurement protocols across studies and within-study train/test leakage could inflate performance. A leave-one-study-out evaluation would be more convincing.",
+      "priority": "Skim"
     },
     {
       "title": "Bad Genius: Counterfactual-Guided Harness Evolution Beyond Task-Specific Shortcuts",
       "authors": "Guojun Zhu, Xunheng Huang, Peng Yin, Jiahui Xie, Sanguo Zhang, Doudou Zhou",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18366v1",
-      "summary": "agentのprompt・memory・retrieval・toolをbenchmark上で最適化するとprotocol shortcutを学ぶ問題に対し、意味を保つcounterfactual protocolをChallengerが生成してshortcutを潰すCHASEを提案。",
-      "use": "scientific agentやRAG pipelineを同じ評価setで反復改善すると、研究能力でなくharness固有の癖を最適化する。Transfer Trustのagent版として重要。",
-      "steal": "benchmark taskだけでなく採点順序・tool surface・提示形式をvalidity-preservingに変え、gain destructionを主要指標にする。",
-      "doubt": "counterfactualの『意味保存』を自動firewallが保証できるか。OfficeQA以外で人手監査するとshortcut除去とtask難化を区別できるか。",
-      "priority": "精読"
+      "summary": "Addresses the problem that optimizing an agent's prompt, memory, retrieval, and tools against one benchmark can reward protocol-specific shortcuts. CHASE introduces a Challenger that generates validity-preserving counterfactual protocols intended to expose and remove those shortcuts.",
+      "use": "Scientific agents and RAG pipelines can easily optimize benchmark-specific harness quirks rather than scientific capability. This provides a useful analogue of transfer-trust testing for agent systems.",
+      "steal": "Vary scoring order, tool surfaces, and presentation formats while preserving task meaning, then measure how much of the original performance gain is destroyed.",
+      "doubt": "The key question is whether automated counterfactuals truly preserve meaning. Human audits outside OfficeQA would help distinguish shortcut removal from simply making the task harder.",
+      "priority": "Deep read"
     },
     {
       "title": "Decodability is Not Causality: Dissociating Probe Readouts from Behavioral Drivers via SAE Decomposition",
       "authors": "Devesh Tiwari, Camille Davis, Shivank Sinha, Talia Weaver, Aditya Shah, Maheep Chaudhary",
       "published": "2026-09-16",
       "url": "https://arxiv.org/abs/2609.18080v1",
-      "summary": "linear probeで概念が読めても、そのfeatureをmodelが行動に使うとは限らない。SAE featureをprobe alignmentとbehavior gradientで分けてablateし、両順位の重なりが約12%しかないことを示す。",
-      "use": "biological representationでも『cell stateがdecodeできる』と『予測機構がその軸を使う』は別物。probe結果をcausal claimへ飛躍させない実験設計として移植できる。",
-      "steal": "readout精度の後に、activation-aware feature選択→intervention→behavior changeまでを必須の因果チェックにする。",
-      "doubt": "単一truth probe・単一model family中心で一般性は未確立。SAE dictionaryの不安定性とablationによるoff-manifold効果を分離できるか。",
-      "priority": "ざっと読む"
+      "summary": "Shows that a concept being decodable by a linear probe does not imply that the model actually uses those features to drive behavior. SAE features are ranked by probe alignment and behavioral gradient, and the overlap between the two rankings is only about 12%.",
+      "use": "The same warning applies to biological representations: being able to decode a cell state is not the same as showing that the predictive mechanism relies on that axis. This is a useful experimental template for avoiding causal overclaims from probes.",
+      "steal": "After demonstrating readout accuracy, add an activation-aware feature-selection step followed by intervention and behavioral change as a required causal check.",
+      "doubt": "The result is centered on one truth-probe setting and a narrow model family. SAE dictionary instability and off-manifold effects from ablation also need to be separated from true causal importance.",
+      "priority": "Skim"
     },
     {
       "title": "Changepoint-Aware World Models: Detecting Dynamics Shifts and Recovering by Forgetting Stale Replay in Model-Based RL",
       "authors": "Everest Yang",
       "published": "2026-07-15",
       "url": "https://arxiv.org/abs/2609.18950v1",
-      "summary": "DreamerV3のprediction errorにonline CUSUMをかけて急なdynamics shiftを検知し、表現は保持したまま古いreplayを捨てる。重力・actuator gain変化後の回復をpassive retrainingより高速化。",
-      "use": "cell line・batch・treatment regimeが変わった時、古いデータを無条件に混ぜる負のtransferを避ける発想として有用。world modelを継続更新する際の状態管理に効く。",
-      "steal": "representationはwarm-startしつつ、change detection後にdata memoryだけをresetする二層の適応戦略。",
-      "doubt": "abruptなsimulated shiftと3 seed中心で、緩やかなdriftや誤検知には弱い可能性。resetが必要な変化と単なるnoiseをどう識別するか。",
-      "priority": "Abstractだけで十分"
+      "summary": "Applies online CUSUM to DreamerV3 prediction error to detect abrupt dynamics shifts, then keeps the learned representation while discarding stale replay data. This speeds recovery after changes in gravity or actuator gain compared with passive retraining.",
+      "use": "The idea may transfer to biological settings where cell line, batch, or treatment regime changes make old data actively harmful. It suggests a way to manage continual updates to a world model without blindly mixing stale and current observations.",
+      "steal": "Warm-start the representation but reset only the data memory after a detected change, separating persistent knowledge from stale experience.",
+      "doubt": "The evidence focuses on abrupt simulated shifts and only a few seeds. Gradual drift and false positives may be much harder, especially when distinguishing a true regime change from noise.",
+      "priority": "Abstract only"
     }
   ]
 }

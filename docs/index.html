@@ -1,7 +1,61 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daily Paper Suggestions</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:980px;margin:0 auto;padding:40px 20px;background:#f6f8fa;color:#1f2328}header{margin-bottom:28px}h1{font-size:2rem;margin-bottom:6px}.sub{color:#656d76}.card,.fallback{background:white;border:1px solid #d0d7de;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}.card h2{font-size:1.18rem;margin:0 0 8px}.meta{font-size:.88rem;color:#656d76;margin-bottom:14px}.section{margin-top:14px}.label{font-weight:650}.steal{background:#f0f7ff;border-left:4px solid #0969da;padding:12px 14px;border-radius:6px}.warn{background:#fff8c5;padding:12px 14px;border-radius:6px}.priority{display:inline-block;padding:3px 9px;border-radius:999px;background:#ddf4ff;font-size:.82rem;font-weight:600}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}#status{color:#656d76}.date{font-weight:600}ul{padding-left:20px;line-height:1.55}.fallback h2{margin-top:32px;border-top:1px solid #d8dee4;padding-top:24px}.fallback h2:first-of-type{border-top:0;margin-top:8px}.fallback h3{margin-top:22px}.fallback hr{border:0;border-top:1px solid #d8dee4;margin:28px 0}@media(max-width:600px){body{padding:24px 12px}.card,.fallback{padding:16px}}</style></head><body data-latest-date="2026-09-17"><header><h1>Daily Paper Suggestions</h1><div class="sub">10 papers a day — not to read everything, but to capture reusable ideas for research.</div></header><div id="status">Loading...</div><main id="papers"></main><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script>
-const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
-async function renderJson(){const r=await fetch('latest.json?'+Date.now());if(!r.ok)throw Error('no json');const d=await r.json();document.getElementById('status').innerHTML=`<span class="date">${esc(d.date)}</span> — ${d.papers.length} papers · <a href="https://github.com/inoue0426/daily-paper-suggestion/blob/main/papers/daily/${encodeURIComponent(d.date)}.md">Markdown archive</a>`;document.getElementById('papers').innerHTML=d.papers.map((p,i)=>`<article class="card"><h2>${i+1}. <a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a></h2><div class="meta">${esc(p.authors)} · ${esc(p.published)}</div><div class="section"><span class="label">30-second summary</span>${marked.parse(p.summary||'')}</div><div class="section steal"><span class="label">Ideas worth stealing</span>${marked.parse(p.steal||'')}</div><div class="section"><span class="label">How this could help my research</span>${marked.parse(p.use||'')}</div><div class="section warn"><span class="label">Strongest caveat</span>${marked.parse(p.doubt||'')}</div><div class="section"><span class="priority">${esc(p.priority||'')}</span></div></article>`).join('')}
-async function renderFallback(){const candidates=[];for(let n=0;n<=14;n++){const d=new Date(Date.now()-n*86400000).toISOString().slice(0,10);candidates.push(d)}for(const date of candidates){const url=`https://raw.githubusercontent.com/inoue0426/daily-paper-suggestion/main/papers/daily/${date}.md?${Date.now()}`;const r=await fetch(url,{cache:'no-store'});if(r.ok){const md=await r.text();document.getElementById('status').innerHTML=`<span class="date">${esc(date)}</span> — Markdown view`;document.getElementById('papers').innerHTML=`<article class="fallback">${marked.parse(md)}</article>`;return}}throw Error('daily markdown not found')}
-renderJson().catch(()=>renderFallback().catch(e=>document.getElementById('status').textContent='No published data yet: '+e.message));
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daily Paper Suggestions</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:980px;margin:0 auto;padding:40px 20px;background:#f6f8fa;color:#1f2328}header{margin-bottom:22px}h1{font-size:2rem;margin-bottom:6px}.sub{color:#656d76}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid #d0d7de;border-radius:12px;padding:12px 14px;margin:0 0 18px}.toolbar label{font-weight:650}.toolbar select,.toolbar button{font:inherit;border:1px solid #d0d7de;border-radius:7px;background:#fff;padding:7px 10px}.toolbar button{cursor:pointer}.toolbar button:hover:not(:disabled){background:#f3f4f6}.toolbar button:disabled{opacity:.45;cursor:default}.card,.fallback{background:white;border:1px solid #d0d7de;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}.card h2{font-size:1.18rem;margin:0 0 8px}.meta{font-size:.88rem;color:#656d76;margin-bottom:14px}.section{margin-top:14px}.label{font-weight:650}.steal{background:#f0f7ff;border-left:4px solid #0969da;padding:12px 14px;border-radius:6px}.warn{background:#fff8c5;padding:12px 14px;border-radius:6px}.priority{display:inline-block;padding:3px 9px;border-radius:999px;background:#ddf4ff;font-size:.82rem;font-weight:600}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}#status{color:#656d76}.date{font-weight:600}ul{padding-left:20px;line-height:1.55}.fallback h2{margin-top:32px;border-top:1px solid #d8dee4;padding-top:24px}.fallback h2:first-of-type{border-top:0;margin-top:8px}.fallback h3{margin-top:22px}.fallback hr{border:0;border-top:1px solid #d8dee4;margin:28px 0}@media(max-width:600px){body{padding:24px 12px}.card,.fallback{padding:16px}.toolbar{align-items:stretch}.toolbar select{flex:1}}</style></head><body><header><h1>Daily Paper Suggestions</h1><div class="sub">10 papers a day — not to read everything, but to capture reusable ideas for research.</div></header><div class="toolbar"><button id="newer" type="button">← Newer</button><label for="archive">Archive</label><select id="archive" aria-label="Choose a daily report"></select><button id="older" type="button">Older →</button></div><div id="status">Loading...</div><main id="papers"></main><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script>
+const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let archiveDates=[];
+let selectedDate=null;
+
+function updateNav(){
+  const i=archiveDates.indexOf(selectedDate);
+  document.getElementById('newer').disabled=i<=0;
+  document.getElementById('older').disabled=i<0||i>=archiveDates.length-1;
+  document.getElementById('archive').value=selectedDate||'';
+}
+
+function setUrlDate(date){
+  const u=new URL(window.location.href);
+  if(date===archiveDates[0])u.searchParams.delete('date'); else u.searchParams.set('date',date);
+  history.replaceState(null,'',u);
+}
+
+function renderCards(d){
+  document.getElementById('status').innerHTML=`<span class="date">${esc(d.date)}</span> — ${d.papers.length} papers · <a href="https://github.com/inoue0426/daily-paper-suggestion/blob/main/papers/daily/${encodeURIComponent(d.date)}.md">Markdown archive</a>`;
+  document.getElementById('papers').innerHTML=d.papers.map((p,i)=>`<article class="card"><h2>${i+1}. <a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a></h2><div class="meta">${esc(p.authors)} · ${esc(p.published)}</div><div class="section"><span class="label">30-second summary</span>${marked.parse(p.summary||'')}</div><div class="section steal"><span class="label">Ideas worth stealing</span>${marked.parse(p.steal||'')}</div><div class="section"><span class="label">How this could help my research</span>${marked.parse(p.use||'')}</div><div class="section warn"><span class="label">Strongest caveat</span>${marked.parse(p.doubt||'')}</div><div class="section"><span class="priority">${esc(p.priority||'')}</span></div></article>`).join('');
+}
+
+async function renderDate(date){
+  selectedDate=date;
+  updateNav();
+  setUrlDate(date);
+  document.getElementById('status').textContent='Loading...';
+  document.getElementById('papers').innerHTML='';
+  if(date===archiveDates[0]){
+    const r=await fetch('latest.json?'+Date.now(),{cache:'no-store'});
+    if(r.ok){const d=await r.json();if(d.date===date){renderCards(d);return}}
+  }
+  const url=`https://raw.githubusercontent.com/inoue0426/daily-paper-suggestion/main/papers/daily/${encodeURIComponent(date)}.md?${Date.now()}`;
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw Error(`report not found for ${date}`);
+  const md=await r.text();
+  document.getElementById('status').innerHTML=`<span class="date">${esc(date)}</span> — historical report · <a href="https://github.com/inoue0426/daily-paper-suggestion/blob/main/papers/daily/${encodeURIComponent(date)}.md">View on GitHub</a>`;
+  document.getElementById('papers').innerHTML=`<article class="fallback">${marked.parse(md)}</article>`;
+}
+
+async function init(){
+  const r=await fetch('archive.json?'+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('archive index unavailable');
+  const a=await r.json();
+  archiveDates=Array.isArray(a.dates)?a.dates:[];
+  if(!archiveDates.length)throw Error('archive is empty');
+  const select=document.getElementById('archive');
+  select.innerHTML=archiveDates.map((d,i)=>`<option value="${esc(d)}">${esc(d)}${i===0?' — latest':''}</option>`).join('');
+  const requested=new URLSearchParams(location.search).get('date');
+  selectedDate=archiveDates.includes(requested)?requested:archiveDates[0];
+  select.addEventListener('change',()=>renderDate(select.value).catch(showError));
+  document.getElementById('newer').addEventListener('click',()=>{const i=archiveDates.indexOf(selectedDate);if(i>0)renderDate(archiveDates[i-1]).catch(showError)});
+  document.getElementById('older').addEventListener('click',()=>{const i=archiveDates.indexOf(selectedDate);if(i>=0&&i<archiveDates.length-1)renderDate(archiveDates[i+1]).catch(showError)});
+  await renderDate(selectedDate);
+}
+
+function showError(e){document.getElementById('status').textContent='Could not load report: '+e.message}
+init().catch(showError);
 </script></body></html>

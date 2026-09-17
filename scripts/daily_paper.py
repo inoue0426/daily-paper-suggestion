@@ -58,33 +58,33 @@ def rank_with_ollama(cfg,papers,count):
     compact=[{"index":i,"title":p.title,"abstract":p.abstract[:2200],"published":p.published,"url":p.url} for i,p in enumerate(papers[:cfg.get("max_candidates_for_llm",90)])]
     count=min(count,len(compact)); interests="\n".join(f"- {x}" for x in cfg["research_interests"])
     max_perturb=int(cfg.get("max_perturbation_like",3)); min_outside=int(cfg.get("min_outside_core_biomed",3))
-    prompt=f"""あなたはBiomedical AI研究者のresearch scoutです。研究関心:\n{interests}\n\n候補から上位{count}本を選んでください。conceptual novelty、再利用可能なmethod/representation/evaluation/experimental ideaを優先し、小さなbenchmark gainより研究の景色を変えるideaを優先します。\n\n重要: exploration diversityを強制してください。\n- perturbation / drug-response / single-cell perturbation を主題とする論文は最大 {max_perturb} 本まで。\n- 少なくとも {min_outside} 本は、core biomedical perturbation領域の外（例: AI-for-science, agents, scientific reasoning, causal ML, world models, graph/geometric ML, uncertainty, active learning, verification, generative modeling）から選ぶ。\n- 同じmethod family・同じbiological taskに偏らせない。\n- 10本を『似た論文のランキング』ではなく『異なる研究方向への10個の窓』として選ぶ。\n- 今の研究に近いことだけを理由に高順位にしない。遠い分野でもtransferableなideaが強ければ積極的に選ぶ。\n- abstractにない接続や効能は捏造しない。\n\nCandidates:\n{json.dumps(compact,ensure_ascii=False)}\n\nJSONのみ返す: {{\"selected\":[{{\"index\":0,\"why\":\"日本語で1-2文。何が新しい窓なのかも明示\",\"theme\":\"短いテーマ名\"}}]}}。必ず{count}件、重複なし。"""
+    prompt=f"""You are a research scout for a biomedical AI researcher. Research interests:\n{interests}\n\nSelect the top {count} papers from the candidates. Prioritize conceptual novelty and reusable methods, representations, evaluation ideas, or experimental designs. Prefer ideas that could change how a research problem is approached over small benchmark gains.\n\nImportant: enforce exploration diversity.\n- Select at most {max_perturb} papers primarily focused on perturbation, drug response, or single-cell perturbation.\n- Select at least {min_outside} papers from outside the core biomedical perturbation area, such as AI for science, agents, scientific reasoning, causal ML, world models, graph/geometric ML, uncertainty, active learning, verification, or generative modeling.\n- Do not over-select papers from the same method family or biological task.\n- Treat the set as '10 windows into different research directions,' not a ranking of near-duplicate papers.\n- Do not rank a paper highly merely because it is close to the current research. A distant field should rank highly if it contains a strong transferable idea.\n- Do not invent connections or capabilities that are not supported by the abstract.\n\nCandidates:\n{json.dumps(compact,ensure_ascii=False)}\n\nReturn JSON only: {{\"selected\":[{{\"index\":0,\"why\":\"1-2 concise English sentences explaining why this is a useful and distinct research window\",\"theme\":\"short English theme name\"}}]}}. Return exactly {count} unique entries."""
     raw=json.loads(ollama_generate(cfg,prompt,True)).get("selected",[]); selected=[]; used=set(); themes=[]
     for item in raw:
         try: idx=int(item["index"])
         except Exception: continue
         if 0<=idx<len(compact) and idx not in used:
-            why=str(item.get("why","読む価値が高い候補。")); theme=str(item.get("theme","other"))
+            why=str(item.get("why","A high-value paper worth scanning.")); theme=str(item.get("theme","other"))
             selected.append((papers[idx],f"[{theme}] {why}")); themes.append(theme); used.add(idx)
         if len(selected)>=count: break
     for idx in range(len(compact)):
         if len(selected)>=count: break
-        if idx not in used: selected.append((papers[idx],"[fallback] ランキング結果の不足分として補完。")); used.add(idx)
+        if idx not in used: selected.append((papers[idx],"[fallback] Added to fill the remaining slot after ranking.")); used.add(idx)
     return selected
 
 def summarize_with_ollama(cfg,paper,why):
     interests="\n".join(f"- {x}" for x in cfg["research_interests"])
-    prompt=f"""以下の論文から良いideaだけを拾う。基本日本語、technical termは英語可。宣伝調禁止、abstract外の推測禁止。\n研究関心:\n{interests}\nTitle:{paper.title}\nAuthors:{', '.join(paper.authors)}\nAbstract:{paper.abstract}\n選定理由:{why}\n次のJSONのみ返す: {{\"summary\":\"30秒要約。Markdown bullet 2-4個\",\"steal\":\"この論文から盗むならここ。再利用価値の高いidea 1-3個をMarkdown bullet\",\"use\":\"自分の研究に本当に使えそうな点。無理な接続は禁止。Markdown\",\"doubt\":\"strongest caveat/alternative explanation/assumption 1-2個。Markdown\",\"priority\":\"精読|ざっと読む|Abstractだけで十分\"}}"""
+    prompt=f"""Extract the best ideas from the paper below. Write in clear, concise English. Technical terms may remain as standard technical English. Avoid promotional language and do not speculate beyond the abstract.\nResearch interests:\n{interests}\nTitle:{paper.title}\nAuthors:{', '.join(paper.authors)}\nAbstract:{paper.abstract}\nSelection reason:{why}\nReturn only the following JSON: {{\"summary\":\"A 30-second summary in 2-4 Markdown bullets\",\"steal\":\"1-3 highly reusable ideas worth stealing, in Markdown bullets\",\"use\":\"How this could genuinely be useful for my research. Do not force a connection. Markdown\",\"doubt\":\"1-2 strongest caveats, alternative explanations, or assumptions worth checking. Markdown\",\"priority\":\"Deep read|Skim|Abstract only\"}}"""
     return json.loads(ollama_generate(cfg,prompt,True))
 
 def main():
     cfg=load_config(); seen=load_seen(); papers=candidate_pool(cfg,seen)
     if not papers: raise SystemExit("No unseen paper candidates found.")
     count=min(int(cfg.get("daily_paper_count",10)),len(papers)); selected=rank_with_ollama(cfg,papers,count); today=datetime.now(timezone.utc).date().isoformat(); OUT_DIR.mkdir(parents=True,exist_ok=True); DOCS_DIR.mkdir(parents=True,exist_ok=True)
-    sections=[f"# Daily Paper Suggestions — {today}","",f"今日は **{len(selected)}本**。全部を読む前提ではなく、異なる研究方向から使えるideaを拾うためのdiverse scoutです。",""]; page=[]
+    sections=[f"# Daily Paper Suggestions — {today}","",f"Today's list has **{len(selected)} papers**. The goal is not to read every paper in full, but to scan diverse research directions and extract reusable ideas.",""]; page=[]
     for rank,(p,why) in enumerate(selected,1):
         print(f"[{rank}/{len(selected)}] Summarizing: {p.title}"); s=summarize_with_ollama(cfg,p,why)
-        sections += [f"## {rank}. {p.title}","",f"- **URL:** {p.url}",f"- **Published:** {p.published}",f"- **Authors:** {', '.join(p.authors)}","",f"### 今日入れた理由\n{why}",f"### 30秒要約\n{s.get('summary','')}",f"### この論文から盗むならここ\n{s.get('steal','')}",f"### 自分の研究にどう使えそうか\n{s.get('use','')}",f"### そのまま信じない方がいい点\n{s.get('doubt','')}",f"### 読む優先度\n**{s.get('priority','')}**","","---",""]
+        sections += [f"## {rank}. {p.title}","",f"- **URL:** {p.url}",f"- **Published:** {p.published}",f"- **Authors:** {', '.join(p.authors)}","",f"### Why it made today's list\n{why}",f"### 30-second summary\n{s.get('summary','')}",f"### Ideas worth stealing\n{s.get('steal','')}",f"### How this could help my research\n{s.get('use','')}",f"### Strongest caveat\n{s.get('doubt','')}",f"### Reading priority\n**{s.get('priority','')}**","","---",""]
         page.append({"title":p.title,"url":p.url,"published":p.published,"authors":", ".join(p.authors),"why":why,**s}); seen.add(p.paper_id)
     (OUT_DIR/f"{today}.md").write_text("\n".join(sections)); (DOCS_DIR/"latest.json").write_text(json.dumps({"date":today,"papers":page},ensure_ascii=False,indent=2)); save_seen(seen); print(f"Wrote daily report and docs/latest.json")
 if __name__=="__main__": main()

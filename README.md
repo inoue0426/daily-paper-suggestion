@@ -1,25 +1,25 @@
 # daily-paper-suggestion
 
-毎日10本、今の研究に効きそうな論文を arXiv から選び、Local Ollama で日本語中心に要約して保存するための research CI です。
+A lightweight research CI that selects 10 papers per day from arXiv, summarizes them with a local Ollama model, and saves the results as a daily research feed.
 
 👉 **GitHub Pages:** https://inoue0426.github.io/daily-paper-suggestion/
 
 ## What it does
 
-1. arXiv から perturbation / drug response / single-cell / causal intervention / AI-for-science 周辺の新着候補を取得
-2. Local Ollama で候補をランキング
-3. 上位10本を、似た論文だけに偏らないように選択
-4. 各論文について日本語中心で以下を出力
-   - 30秒要約
-   - この論文から盗むならここ
-   - 自分の研究にどう使えそうか
-   - そのまま信じない方がいい点
-   - 精読 / ざっと読む / Abstractだけで十分 の判定
-5. `papers/daily/YYYY-MM-DD.md` に10本まとめて保存
-6. 既読論文を `papers/seen.json` に記録
-7. `run_daily.sh` 経由なら自動で commit / push
+1. Fetches recent arXiv candidates around perturbation, drug response, single-cell biology, causal intervention, AI for science, and related areas.
+2. Ranks candidates with a local Ollama model.
+3. Selects the top 10 while explicitly encouraging topic diversity.
+4. Produces the following for each paper:
+   - 30-second summary
+   - Ideas worth stealing
+   - How it could be useful for my research
+   - Strongest caveat or reason for skepticism
+   - Reading priority: deep read / skim / abstract only
+5. Saves all 10 papers to `papers/daily/YYYY-MM-DD.md`.
+6. Tracks previously seen papers in `papers/seen.json`.
+7. When run through `run_daily.sh`, automatically commits and pushes the new report.
 
-狙いは「10本すべてを精読する」ことではなく、毎日広くscanして、各論文から再利用できるproblem formulation / representation / method / loss / evaluation / experimental designを拾うことです。
+The goal is not to read all 10 papers in full. The goal is to scan broadly every day and extract reusable problem formulations, representations, methods, losses, evaluation ideas, and experimental designs.
 
 ## Setup
 
@@ -30,49 +30,49 @@ python3 -m pip install -r requirements.txt
 ollama pull qwen3:8b
 ```
 
-Ollama server が起動していなければ:
+If the Ollama server is not already running:
 
 ```bash
 ollama serve
 ```
 
-手動テスト:
+Manual test:
 
 ```bash
 bash run_daily.sh
 ```
 
-10本を順番に要約するため、1本版より実行時間は長くなります。
+Because the pipeline summarizes 10 papers sequentially, a full daily run takes longer than a single-paper test.
 
 ## Daily scheduling on macOS
 
-GitHub Actions runner から Mac の localhost Ollama には接続できないため、スケジュールは Mac 側で実行します。
+A GitHub Actions runner cannot access Ollama running on your Mac's localhost, so scheduling is handled locally on the Mac.
 
 ```bash
 chmod +x run_daily.sh
 crontab -e
 ```
 
-例: 毎朝 8:00 に実行:
+Example: run every morning at 8:00 AM:
 
 ```cron
 0 8 * * * /bin/bash /ABSOLUTE/PATH/daily-paper-suggestion/run_daily.sh >> /ABSOLUTE/PATH/daily-paper-suggestion/daily-paper.log 2>&1
 ```
 
-Mac がその時間に起動していて、Ollama server が利用可能である必要があります。
+The Mac must be awake at that time and the Ollama server must be available.
 
 ## Configuration
 
-`daily-paper.json` で以下を変更できます:
+You can change the following settings in `daily-paper.json`:
 
 - `ollama_model`: default `qwen3:8b`
-- `daily_paper_count`: 1日あたりの推薦本数。default `10`
-- `research_interests`: 推薦基準
-- `arxiv_queries`: 探索範囲
-- `max_results_per_query`: queryごとの候補数
-- `max_candidates_for_llm`: Ollamaに渡す最大候補数
+- `daily_paper_count`: number of recommendations per day; default `10`
+- `research_interests`: ranking criteria
+- `arxiv_queries`: search scope
+- `max_results_per_query`: number of candidates retrieved per query
+- `max_candidates_for_llm`: maximum number of candidates sent to Ollama
 
-モデルを変える例:
+Example model change:
 
 ```json
 "ollama_model": "qwen3:14b"
@@ -80,6 +80,6 @@ Mac がその時間に起動していて、Ollama server が利用可能であ�
 
 ## Design principle
 
-この bot は論文のstoryを鵜呑みにするための要約器ではありません。各論文から「使えるidea」を抽出しつつ、同時に strongest caveat を明示します。
+This bot is not meant to accept each paper's narrative at face value. It extracts reusable ideas while also surfacing the strongest caveat, alternative explanation, or assumption worth checking.
 
-PerturbRx 等への関連付けも、abstractから自然に言える場合だけ行い、無理な接続やunsupported claimは避けるpromptにしています。最終的に何を読むか、何を研究に取り込むかの判断は研究者側に残します。
+Connections to ongoing projects such as PerturbRx should only be made when they are directly supported by the abstract. The prompts explicitly discourage forced connections and unsupported claims. The final decision about what to read, trust, or incorporate into research remains with the researcher.

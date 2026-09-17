@@ -77,6 +77,10 @@ def summarize_with_ollama(cfg,paper,why):
     prompt=f"""Extract the best ideas from the paper below. Write in clear, concise English. Technical terms may remain as standard technical English. Avoid promotional language and do not speculate beyond the abstract.\nResearch interests:\n{interests}\nTitle:{paper.title}\nAuthors:{', '.join(paper.authors)}\nAbstract:{paper.abstract}\nSelection reason:{why}\nReturn only the following JSON: {{\"summary\":\"A 30-second summary in 2-4 Markdown bullets\",\"steal\":\"1-3 highly reusable ideas worth stealing, in Markdown bullets\",\"use\":\"How this could genuinely be useful for my research. Do not force a connection. Markdown\",\"doubt\":\"1-2 strongest caveats, alternative explanations, or assumptions worth checking. Markdown\",\"priority\":\"Deep read|Skim|Abstract only\"}}"""
     return json.loads(ollama_generate(cfg,prompt,True))
 
+def write_archive_index():
+    dates=sorted((p.stem for p in OUT_DIR.glob("*.md")), reverse=True)
+    (DOCS_DIR/"archive.json").write_text(json.dumps({"dates":dates},indent=2)+"\n")
+
 def main():
     cfg=load_config(); seen=load_seen(); papers=candidate_pool(cfg,seen)
     if not papers: raise SystemExit("No unseen paper candidates found.")
@@ -86,5 +90,5 @@ def main():
         print(f"[{rank}/{len(selected)}] Summarizing: {p.title}"); s=summarize_with_ollama(cfg,p,why)
         sections += [f"## {rank}. {p.title}","",f"- **URL:** {p.url}",f"- **Published:** {p.published}",f"- **Authors:** {', '.join(p.authors)}","",f"### Why it made today's list\n{why}",f"### 30-second summary\n{s.get('summary','')}",f"### Ideas worth stealing\n{s.get('steal','')}",f"### How this could help my research\n{s.get('use','')}",f"### Strongest caveat\n{s.get('doubt','')}",f"### Reading priority\n**{s.get('priority','')}**","","---",""]
         page.append({"title":p.title,"url":p.url,"published":p.published,"authors":", ".join(p.authors),"why":why,**s}); seen.add(p.paper_id)
-    (OUT_DIR/f"{today}.md").write_text("\n".join(sections)); (DOCS_DIR/"latest.json").write_text(json.dumps({"date":today,"papers":page},ensure_ascii=False,indent=2)); save_seen(seen); print(f"Wrote daily report and docs/latest.json")
+    (OUT_DIR/f"{today}.md").write_text("\n".join(sections)); (DOCS_DIR/"latest.json").write_text(json.dumps({"date":today,"papers":page},ensure_ascii=False,indent=2)); write_archive_index(); save_seen(seen); print("Wrote daily report, docs/latest.json, and docs/archive.json")
 if __name__=="__main__": main()
